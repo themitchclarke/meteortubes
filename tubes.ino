@@ -21,14 +21,20 @@
 // EFFECT DEFINITIONS
 // ============================================================================
 // Effect IDs for activeEffect cloud variable
-#define EFFECT_OFF        0
-#define EFFECT_PACIFICA   1
-#define EFFECT_GLITTER    2
-#define EFFECT_RAINBOW    3
-#define EFFECT_DRIP       4
-#define EFFECT_MATRIX     5
-#define EFFECT_COUNTDOWN  6
-#define EFFECT_JUGGLE     7
+#define EFFECT_OFF              0
+#define EFFECT_PACIFICA         1
+#define EFFECT_GLITTER          2
+#define EFFECT_RAINBOW          3
+#define EFFECT_DRIP             4
+#define EFFECT_MATRIX           5
+#define EFFECT_COUNTDOWN        6
+#define EFFECT_JUGGLE           7
+// Christmas Effects
+#define EFFECT_CANDY_CANE       8
+#define EFFECT_CHRISTMAS_SPARKLE 9
+#define EFFECT_CHRISTMAS_CHASE  10
+#define EFFECT_CHRISTMAS_TWINKLE 11
+#define EFFECT_HOLLY            12
 
 // ============================================================================
 // HARDWARE CONFIGURATION
@@ -53,6 +59,12 @@ bool countdownComplete = false;
 // ============================================================================
 // COLOR PALETTES
 // ============================================================================
+
+// Christmas Colors
+#define CHRISTMAS_RED    CRGB(220, 20, 20)
+#define CHRISTMAS_GREEN  CRGB(20, 150, 20)
+#define CHRISTMAS_GOLD   CRGB(255, 200, 50)
+#define CHRISTMAS_WHITE  CRGB(255, 255, 255)
 
 CRGBPalette16 pacifica_palette_1 =
     {0x000507, 0x000409, 0x00030B, 0x00030D, 0x000210, 0x000212, 0x000114, 0x000117,
@@ -503,6 +515,173 @@ void effectJuggle() {
 }
 
 // ============================================================================
+// CHRISTMAS EFFECTS
+// ============================================================================
+
+// Candy Cane: Red and white striped pattern that rotates
+void effectCandyCane() {
+  static uint8_t rotation = 0;
+
+  for (int tube = 0; tube < NUM_TUBES; tube++) {
+    for (int i = 0; i < NUM_LEDS_PER_TUBE / 2; i++) {
+      // Create stripes with rotation
+      int position = (i + rotation / 4) % 8;
+      CRGB color = (position < 4) ? CHRISTMAS_RED : CHRISTMAS_WHITE;
+      setMirroredLED(tube, i, color);
+    }
+  }
+
+  FastLED.show();
+  rotation++;
+  delay(50);
+}
+
+// Christmas Sparkle: Random sparkles of red, green, white, and gold
+void effectChristmasSparkle() {
+  static unsigned long lastUpdate = 0;
+  unsigned long now = millis();
+
+  // Fade all LEDs
+  for (int i = 0; i < TOTAL_LEDS; i++) {
+    leds[i].nscale8(240);
+  }
+
+  if (now - lastUpdate > 30) {
+    lastUpdate = now;
+
+    // Add random sparkles
+    for (int i = 0; i < 5; i++) {
+      int index = random(0, TOTAL_LEDS);
+      int colorChoice = random(0, 4);
+
+      switch(colorChoice) {
+        case 0: leds[index] = CHRISTMAS_RED; break;
+        case 1: leds[index] = CHRISTMAS_GREEN; break;
+        case 2: leds[index] = CHRISTMAS_WHITE; break;
+        case 3: leds[index] = CHRISTMAS_GOLD; break;
+      }
+    }
+  }
+
+  FastLED.show();
+}
+
+// Christmas Chase: Alternating red and green chase effect
+void effectChristmasChase() {
+  static uint8_t offset = 0;
+
+  for (int tube = 0; tube < NUM_TUBES; tube++) {
+    for (int i = 0; i < NUM_LEDS_PER_TUBE / 2; i++) {
+      int position = (i + offset) % 6;
+      CRGB color;
+
+      if (position < 2) {
+        color = CHRISTMAS_RED;
+      } else if (position < 4) {
+        color = CHRISTMAS_GREEN;
+      } else {
+        color = CRGB::Black;
+      }
+
+      setMirroredLED(tube, i, color);
+    }
+  }
+
+  FastLED.show();
+  offset++;
+  delay(60);
+}
+
+// Christmas Twinkle: Twinkling lights like on a Christmas tree
+void effectChristmasTwinkle() {
+  static unsigned long lastUpdate = 0;
+  static int twinkleCount = 0;
+  unsigned long now = millis();
+
+  int maxTwinkles = TOTAL_LEDS / 4;
+
+  if (now - lastUpdate > 50) {
+    lastUpdate = now;
+
+    // Add new twinkles
+    while (twinkleCount < maxTwinkles) {
+      int index = random(0, TOTAL_LEDS);
+      if (leds[index].getAverageLight() < 50) {
+        int colorChoice = random(0, 4);
+        switch(colorChoice) {
+          case 0: leds[index] = CHRISTMAS_RED; break;
+          case 1: leds[index] = CHRISTMAS_GREEN; break;
+          case 2: leds[index] = CHRISTMAS_WHITE; break;
+          case 3: leds[index] = CHRISTMAS_GOLD; break;
+        }
+        twinkleCount++;
+      }
+    }
+
+    // Fade existing lights
+    for (int i = 0; i < TOTAL_LEDS; i++) {
+      if (leds[i] != CRGB::Black) {
+        leds[i].nscale8(200);
+        if (leds[i].getAverageLight() < 10) {
+          leds[i] = CRGB::Black;
+          twinkleCount--;
+        }
+      }
+    }
+
+    FastLED.show();
+  }
+}
+
+// Holly: Green background with occasional red "berries"
+void effectHolly() {
+  static unsigned long lastBerry = 0;
+  static int berryPositions[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+  static uint8_t berryBrightness[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  unsigned long now = millis();
+
+  // Fill with green
+  fill_solid(leds, TOTAL_LEDS, CHRISTMAS_GREEN);
+
+  // Add red berries that fade in and out
+  if (now - lastBerry > 200) {
+    lastBerry = now;
+
+    // Add new berry
+    for (int i = 0; i < 10; i++) {
+      if (berryPositions[i] == -1) {
+        berryPositions[i] = random(0, TOTAL_LEDS);
+        berryBrightness[i] = 0;
+        break;
+      }
+    }
+
+    // Update existing berries
+    for (int i = 0; i < 10; i++) {
+      if (berryPositions[i] != -1) {
+        // Fade in then out
+        if (berryBrightness[i] < 128) {
+          berryBrightness[i] += 8;
+        } else if (berryBrightness[i] < 255) {
+          berryBrightness[i] += 4;
+        } else {
+          // Remove berry
+          berryPositions[i] = -1;
+          berryBrightness[i] = 0;
+        }
+
+        if (berryPositions[i] != -1) {
+          uint8_t brightness = (berryBrightness[i] <= 128) ? berryBrightness[i] * 2 : (255 - berryBrightness[i]) * 2;
+          leds[berryPositions[i]] = CRGB(brightness, 0, 0);
+        }
+      }
+    }
+  }
+
+  FastLED.show();
+}
+
+// ============================================================================
 // ARDUINO SETUP
 // ============================================================================
 
@@ -568,6 +747,21 @@ void loop() {
     case EFFECT_JUGGLE:
       effectJuggle();
       break;
+    case EFFECT_CANDY_CANE:
+      effectCandyCane();
+      break;
+    case EFFECT_CHRISTMAS_SPARKLE:
+      effectChristmasSparkle();
+      break;
+    case EFFECT_CHRISTMAS_CHASE:
+      effectChristmasChase();
+      break;
+    case EFFECT_CHRISTMAS_TWINKLE:
+      effectChristmasTwinkle();
+      break;
+    case EFFECT_HOLLY:
+      effectHolly();
+      break;
     case EFFECT_OFF:
     default:
       FastLED.clear();
@@ -614,18 +808,34 @@ void onCloudPaletteSetIndexChange() {
 /*
  * To add a new LED effect to this project:
  *
- * 1. Define a new effect ID constant at the top of the file (e.g., #define EFFECT_AURORA 8)
+ * 1. Define a new effect ID constant at the top of the file (e.g., #define EFFECT_AURORA 13)
  * 2. Implement your effect function (e.g., void effectAurora() { ... })
  * 3. Add a new case to the switch statement in loop() (e.g., case EFFECT_AURORA: effectAurora(); break;)
  * 4. Set activeEffect to your new effect ID from the Arduino Cloud dashboard
  *
  * That's it! No need to add new cloud variables.
  *
+ * CURRENT EFFECTS:
+ * 0  = Off
+ * 1  = Pacifica (ocean waves)
+ * 2  = Glitter
+ * 3  = Rainbow
+ * 4  = Drip
+ * 5  = Matrix
+ * 6  = Countdown
+ * 7  = Juggle
+ * 8  = Candy Cane (rotating red/white stripes)
+ * 9  = Christmas Sparkle (random red/green/white/gold sparkles)
+ * 10 = Christmas Chase (alternating red/green chase)
+ * 11 = Christmas Twinkle (twinkling tree lights)
+ * 12 = Holly (green with red berry accents)
+ *
  * Available effect functions ready to use:
  * - effectAurora() - Aurora-like wave pattern
  * - effectChase() - Chase up/down effect
  * - effectRedWhite() - Red to white fade transition
  *
- * Example: To activate Aurora effect, add this to the switch statement in loop():
- *   case 8: effectAurora(); break;
+ * Example: To activate Aurora effect, add this to the definitions and switch statement:
+ *   #define EFFECT_AURORA 13
+ *   case EFFECT_AURORA: effectAurora(); break;
  */
