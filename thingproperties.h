@@ -13,11 +13,13 @@ void onCloudPaletteSetIndexChange();
 void onCloudSelectedPaletteChange();
 void onEffectColorChange();
 void onActiveEffectChange();
+void onResetDeviceChange();
 
 int cloudPaletteSetIndex;
 int cloudSelectedPalette;
 int effectColor;
 int activeEffect;
+bool resetDevice;
 
 void initProperties(){
 
@@ -27,6 +29,7 @@ void initProperties(){
   ArduinoCloud.addProperty(cloudSelectedPalette, READWRITE, ON_CHANGE, onCloudSelectedPaletteChange);
   ArduinoCloud.addProperty(effectColor, READWRITE, ON_CHANGE, onEffectColorChange);
   ArduinoCloud.addProperty(activeEffect, READWRITE, ON_CHANGE, onActiveEffectChange);
+  ArduinoCloud.addProperty(resetDevice, READWRITE, ON_CHANGE, onResetDeviceChange);
 
 }
 

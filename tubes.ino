@@ -4,10 +4,11 @@
 
   Arduino IoT Cloud Variables:
 
-  int activeEffect;           // Effect selector (0=off, 1-7=effects)
+  int activeEffect;           // Effect selector (0=off, 1-12=effects)
   int cloudPaletteSetIndex;   // Palette set selector for Pacifica effect
   int cloudSelectedPalette;   // Palette selector for Juggle effect
   int effectColor;            // Color selector for compatible effects
+  bool resetDevice;           // Trigger to remotely restart the ESP32
 
   Variables which are marked as READ/WRITE in the Cloud Thing will also have functions
   which are called when their values are changed from the Dashboard.
@@ -800,6 +801,14 @@ void onCloudSelectedPaletteChange() {
 
 void onCloudPaletteSetIndexChange() {
   // Palette set selection changed for Pacifica effect
+}
+
+void onResetDeviceChange() {
+  if (resetDevice) {
+    Serial.println("Remote restart triggered! Restarting ESP32...");
+    delay(100); // Give time for the message to be sent
+    ESP.restart();
+  }
 }
 
 // ============================================================================
