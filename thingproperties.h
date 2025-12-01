@@ -12,24 +12,12 @@ const char DEVICE_KEY[]  = SECRET_DEVICE_KEY;    // Secret device password
 void onCloudPaletteSetIndexChange();
 void onCloudSelectedPaletteChange();
 void onEffectColorChange();
-void onButtonCountdownChange();
-void onButtonDripChange();
-void onButtonGlitterChange();
-void onButtonJuggleChange();
-void onButtonMatrixChange();
-void onButtonPacificaChange();
-void onButtonRainbowChange();
+void onActiveEffectChange();
 
 int cloudPaletteSetIndex;
 int cloudSelectedPalette;
 int effectColor;
-bool buttonCountdown;
-bool buttonDrip;
-bool buttonGlitter;
-bool buttonJuggle;
-bool buttonMatrix;
-bool buttonPacifica;
-bool buttonRainbow;
+int activeEffect;
 
 void initProperties(){
 
@@ -38,13 +26,7 @@ void initProperties(){
   ArduinoCloud.addProperty(cloudPaletteSetIndex, READWRITE, ON_CHANGE, onCloudPaletteSetIndexChange);
   ArduinoCloud.addProperty(cloudSelectedPalette, READWRITE, ON_CHANGE, onCloudSelectedPaletteChange);
   ArduinoCloud.addProperty(effectColor, READWRITE, ON_CHANGE, onEffectColorChange);
-  ArduinoCloud.addProperty(buttonCountdown, READWRITE, ON_CHANGE, onButtonCountdownChange);
-  ArduinoCloud.addProperty(buttonDrip, READWRITE, ON_CHANGE, onButtonDripChange);
-  ArduinoCloud.addProperty(buttonGlitter, READWRITE, ON_CHANGE, onButtonGlitterChange);
-  ArduinoCloud.addProperty(buttonJuggle, READWRITE, ON_CHANGE, onButtonJuggleChange);
-  ArduinoCloud.addProperty(buttonMatrix, READWRITE, ON_CHANGE, onButtonMatrixChange);
-  ArduinoCloud.addProperty(buttonPacifica, READWRITE, ON_CHANGE, onButtonPacificaChange);
-  ArduinoCloud.addProperty(buttonRainbow, READWRITE, ON_CHANGE, onButtonRainbowChange);
+  ArduinoCloud.addProperty(activeEffect, READWRITE, ON_CHANGE, onActiveEffectChange);
 
 }
 
