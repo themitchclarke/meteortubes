@@ -4,7 +4,7 @@
 
   Arduino IoT Cloud Variables:
 
-  int activeEffect;           // Effect selector (0=off, 1-12=effects)
+  int activeEffect;           // Effect selector (0=off, 1-13=effects)
   int cloudPaletteSetIndex;   // Palette set selector for Pacifica effect
   int cloudSelectedPalette;   // Palette selector for Juggle effect
   int effectColor;            // Color selector for compatible effects
@@ -36,6 +36,7 @@
 #define EFFECT_CHRISTMAS_CHASE  10
 #define EFFECT_CHRISTMAS_TWINKLE 11
 #define EFFECT_HOLLY            12
+#define EFFECT_C7_BULBS         13
 
 // ============================================================================
 // HARDWARE CONFIGURATION
@@ -66,6 +67,13 @@ bool countdownComplete = false;
 #define CHRISTMAS_GREEN  CRGB(20, 150, 20)
 #define CHRISTMAS_GOLD   CRGB(255, 200, 50)
 #define CHRISTMAS_WHITE  CRGB(255, 255, 255)
+
+// Traditional C7 Bulb Colors
+#define C7_RED           CRGB(255, 0, 0)
+#define C7_GREEN         CRGB(0, 255, 0)
+#define C7_BLUE          CRGB(0, 0, 255)
+#define C7_YELLOW        CRGB(255, 200, 0)
+#define C7_ORANGE        CRGB(255, 80, 0)
 
 CRGBPalette16 pacifica_palette_1 =
     {0x000507, 0x000409, 0x00030B, 0x00030D, 0x000210, 0x000212, 0x000114, 0x000117,
@@ -682,6 +690,47 @@ void effectHolly() {
   FastLED.show();
 }
 
+// C7 Bulbs: Traditional colored C7 Christmas lights with spacing
+void effectC7Bulbs() {
+  static uint8_t brightness = 255;
+  static int8_t breathDirection = -1;
+
+  // C7 bulbs are typically spaced every 4-6 inches
+  // With 60 LEDs per tube, we'll light every 5th LED to simulate spacing
+  const int BULB_SPACING = 5;
+
+  // Traditional C7 color pattern
+  CRGB c7Colors[] = {C7_RED, C7_GREEN, C7_BLUE, C7_YELLOW, C7_ORANGE};
+  const int NUM_C7_COLORS = 5;
+
+  // Clear all LEDs first
+  FastLED.clear();
+
+  // Light up bulbs with spacing
+  for (int tube = 0; tube < NUM_TUBES; tube++) {
+    for (int i = 0; i < NUM_LEDS_PER_TUBE / 2; i += BULB_SPACING) {
+      // Select color from the pattern
+      int colorIndex = (i / BULB_SPACING) % NUM_C7_COLORS;
+      CRGB bulbColor = c7Colors[colorIndex];
+
+      // Apply brightness for subtle breathing effect
+      bulbColor.nscale8(brightness);
+
+      // Set the bulb (mirrored on both sides)
+      setMirroredLED(tube, i, bulbColor);
+    }
+  }
+
+  // Subtle breathing effect (very slow and gentle)
+  brightness += breathDirection * 2;
+  if (brightness <= 200 || brightness >= 255) {
+    breathDirection = -breathDirection;
+  }
+
+  FastLED.show();
+  delay(30);
+}
+
 // ============================================================================
 // ARDUINO SETUP
 // ============================================================================
@@ -763,6 +812,9 @@ void loop() {
     case EFFECT_HOLLY:
       effectHolly();
       break;
+    case EFFECT_C7_BULBS:
+      effectC7Bulbs();
+      break;
     case EFFECT_OFF:
     default:
       FastLED.clear();
@@ -838,6 +890,7 @@ void onResetDeviceChange() {
  * 10 = Christmas Chase (alternating red/green chase)
  * 11 = Christmas Twinkle (twinkling tree lights)
  * 12 = Holly (green with red berry accents)
+ * 13 = C7 Bulbs (traditional spaced colored bulbs with breathing)
  *
  * Available effect functions ready to use:
  * - effectAurora() - Aurora-like wave pattern
