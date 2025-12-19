@@ -690,7 +690,7 @@ void effectHolly() {
   FastLED.show();
 }
 
-// C7 Bulbs: Traditional colored C7 Christmas lights with spacing
+// C7 Bulbs: Traditional colored C7 Christmas lights with spacing and breathing
 void effectC7Bulbs() {
   static uint8_t brightness = 255;
   static int8_t breathDirection = -1;
@@ -713,7 +713,7 @@ void effectC7Bulbs() {
       int colorIndex = (i / BULB_SPACING) % NUM_C7_COLORS;
       CRGB bulbColor = c7Colors[colorIndex];
 
-      // Apply brightness for subtle breathing effect
+      // Apply brightness for breathing effect
       bulbColor.nscale8(brightness);
 
       // Set the bulb (mirrored on both sides)
@@ -721,9 +721,14 @@ void effectC7Bulbs() {
     }
   }
 
-  // Subtle breathing effect (very slow and gentle)
-  brightness += breathDirection * 2;
-  if (brightness <= 200 || brightness >= 255) {
+  // Breathing effect - adjust these values to control the effect:
+  // MIN_BRIGHTNESS: lower = more dramatic fade (try 100-200)
+  // BREATH_SPEED: higher = faster breathing (try 1-5)
+  const uint8_t MIN_BRIGHTNESS = 120;  // Was 200 (subtle), now 120 (more dramatic)
+  const uint8_t BREATH_SPEED = 3;      // Was 2, now 3 (faster)
+
+  brightness += breathDirection * BREATH_SPEED;
+  if (brightness <= MIN_BRIGHTNESS || brightness >= 255) {
     breathDirection = -breathDirection;
   }
 
